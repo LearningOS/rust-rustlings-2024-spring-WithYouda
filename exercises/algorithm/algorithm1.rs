@@ -2,13 +2,16 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
+use std::cmp::PartialOrd;
+
 
 #[derive(Debug)]
+#[derive(Clone)]
 struct Node<T> {
     val: T,
     next: Option<NonNull<Node<T>>>,
@@ -23,6 +26,7 @@ impl<T> Node<T> {
     }
 }
 #[derive(Debug)]
+#[derive(Clone)]
 struct LinkedList<T> {
     length: u32,
     start: Option<NonNull<Node<T>>>,
@@ -43,8 +47,9 @@ impl<T> LinkedList<T> {
             end: None,
         }
     }
-
-    pub fn add(&mut self, obj: T) {
+ 
+    pub fn add(&mut self, obj: T) 
+    {
         let mut node = Box::new(Node::new(obj));
         node.next = None;
         let node_ptr = Some(unsafe { NonNull::new_unchecked(Box::into_raw(node)) });
@@ -55,7 +60,7 @@ impl<T> LinkedList<T> {
         self.end = node_ptr;
         self.length += 1;
     }
-
+    //获取从头结点开始的第index（由0开始）个节点的值
     pub fn get(&mut self, index: i32) -> Option<&T> {
         self.get_ith_node(self.start, index)
     }
@@ -69,20 +74,73 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+    // 插入方法
+    fn insert(&mut self, mut list:  LinkedList<T>) -> LinkedList<T>
+    where 
+        T: PartialOrd + Copy,
+    {
+        //创建一个新的链表
+        let mut new_list:LinkedList<T> = LinkedList::new();
+        // 该怎么插入呢？一个一个比较大小？                         
+                                                                 // b:2、4、6、10
+                                                                 // a:1、3、5、7、9
+                                                                 // 1 2 
+        // 先从第一个元素开始比较大小
+        // 先对 b 开始循环
+        let mut add_num_a = 0;
+        let mut add_num_b = 0;
+        let mut start = 0;
+        for index in 0..list.length{
+            let  b_value = list.get(index as i32).expect("啊？");
+            //开始对 a 循环
+            if start == self.length {
+                break;
+            }
+            for indexs in start..self.length{
+                let a_value = self.get(indexs as i32).expect("啊啊？");
+                if *b_value > *a_value{
+                    new_list.add(*a_value);
+                    start +=1;
+                    add_num_a +=1;
+                    
+                }else{
+                    new_list.add(*b_value);
+                    add_num_b +=1;
+                    break;
+                }
+            }
+        }
+        if add_num_a < self.length{
+            for index in add_num_a..self.length{
+                let a_value = self.get(index as i32).expect("啊啊啊？");
+                new_list.add(*a_value);
+            }
+        }else if add_num_b < list.length{
+            for index in add_num_b..list.length{
+                let b_value = list.get(index as i32).expect("啊啊啊？");
+                new_list.add(*b_value);
+            }
+        }
+        new_list
+    }
+	pub fn merge(mut list_a:LinkedList<T>,mut list_b:LinkedList<T>) -> Self
+    where T: std::cmp::PartialOrd + Copy,
 	{
 		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
-        }
+        
+        // 1 2 
+		
+        // 最终返回的新链表
+        let new_list:LinkedList<T>;
+       
+        new_list = list_a.insert(list_b);
+        new_list
 	}
 }
 
 impl<T> Display for LinkedList<T>
 where
-    T: Display,
+    T: Display + Clone + PartialOrd,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self.start {
@@ -94,7 +152,7 @@ where
 
 impl<T> Display for Node<T>
 where
-    T: Display,
+    T: Display + Clone + PartialOrd,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self.next {
@@ -103,6 +161,7 @@ where
         }
     }
 }
+
 
 #[cfg(test)]
 mod tests {
