@@ -2,10 +2,11 @@
 	queue
 	This question requires you to use queues to implement the functionality of the stac
 */
-// I AM NOT DONE
+
 
 #[derive(Debug)]
-pub struct Queue<T> {
+pub struct Queue<T> 
+{
     elements: Vec<T>,
 }
 
@@ -16,8 +17,10 @@ impl<T> Queue<T> {
         }
     }
 
-    pub fn enqueue(&mut self, value: T) {
-        self.elements.push(value)
+    pub fn enqueue(&mut self, value: &T) 
+    where T:Copy, 
+    {
+        self.elements.push(*value)
     }
 
     pub fn dequeue(&mut self) -> Result<T, &str> {
@@ -56,26 +59,56 @@ pub struct myStack<T>
 {
 	//TODO
 	q1:Queue<T>,
-	q2:Queue<T>
+	q2:Queue<T>,
+    size:usize,
+
 }
 impl<T> myStack<T> {
     pub fn new() -> Self {
         Self {
 			//TODO
+            size:0,
 			q1:Queue::<T>::new(),
 			q2:Queue::<T>::new()
         }
     }
-    pub fn push(&mut self, elem: T) {
+    pub fn push(&mut self, elem: T) 
+    where T:Copy,
+    {
         //TODO
+        self.q1.enqueue(&elem);
+        // 开始判断 q1 的大小，并将其反向装载到 q2 上
+        match self.q1.size() {
+            1 => {
+                self.q2.enqueue(&elem);
+                self.size += 1;
+            },
+            _ => {
+                self.q2.elements = self.q1.elements.clone();
+                for index in 0..self.q1.size(){ 
+                   self.q2.elements[index] = self.q1.elements[self.q1.size() - index -1] 
+                }
+                self.size += 1;
+            }
+        } 
     }
     pub fn pop(&mut self) -> Result<T, &str> {
         //TODO
-		Err("Stack is empty")
+        match self.q2.dequeue(){
+		Err(err) => Err("Stack is empty"),
+        Ok(t) => {
+            self.q1.elements.pop();
+            self.size -= 1;
+            Ok(t)
+        },
+        }
     }
     pub fn is_empty(&self) -> bool {
 		//TODO
-        true
+        if self.size == 0{
+            return true;
+        }
+        false
     }
 }
 
